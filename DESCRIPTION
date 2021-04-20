@@ -1,0 +1,12 @@
+Package: TrainSel
+Type: Package
+Title: Design of Training Populations
+Date: 2020-12-14
+Author: Deniz Akdemir, Simon Rio, Julio Isidro Sanchez
+Maintainer: Deniz <deniz.akdemir.work@gmail.com>
+Description: Optimally selecting ordered or unordered samples from a set of candidates, or several ordered or unordered samples from several sets of candidates.
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.3)
+Depends: R (>= 2.10), cluster
+LinkingTo: Rcpp, RcppArmadillo, RcppProgress
+Version: 1.0
