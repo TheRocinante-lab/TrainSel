@@ -12,6 +12,10 @@ using namespace std;
 #include <progress_bar.hpp>
 
 
+
+
+
+
 ///////////////////////
 NumericVector subsetNumVec(NumericVector x, IntegerVector index) {
   // Length of the index vector
@@ -47,7 +51,6 @@ IntegerVector subsetIntVec(IntegerVector x, IntegerVector index) {
   // Return output
   return out;
 }
-
 
 
 Rcpp::IntegerVector whichRcpp(const Rcpp::LogicalVector& x) {
@@ -93,6 +96,34 @@ IntegerVector orderRcpp(vector<double> v) {
 
 }
 
+
+
+IntegerVector orderRcpp(NumericVector x) {
+  NumericVector v=clone(x);
+  int n = v.size();
+  typedef pair<double, int> Elt;
+  priority_queue< Elt, vector<Elt>, greater<Elt> > pq;
+  vector<int> result;
+  for (int i = 0; i != v.size(); ++i) {
+    if (pq.size() < n)
+      pq.push(Elt(v[i], i));
+    else {
+      Elt elt = Elt(v[i], i);
+      if (pq.top() < elt) {
+        pq.pop();
+        pq.push(elt);
+      }
+    }
+  }
+
+  result.reserve(pq.size());
+  while (!pq.empty()) {
+    result.push_back(pq.top().second + 1);
+    pq.pop();
+  }
+  return wrap(result);
+
+}
 
 
 // [[Rcpp::export]]
@@ -331,18 +362,125 @@ LogicalVector do_is_dominated(NumericMatrix points) {
 
 
 
-
 IntegerVector nondominated_order(NumericMatrix points) {
-  int i, j;
   int ntosort = points.ncol();
-  int d=points.nrow();
   IntegerVector nondomorder(ntosort);
-  IntegerVector NonDomCum;
-  while (true){
-    NonDomCum <-whichRcpp(!do_is_dominated(points));
+  nondomorder.fill(0);
+  IntegerVector NonDom;
+  int nsorted=0;
+  int NonDomLevel=0;
+  int i;
+  IntegerVector unassigned;
+  while (nsorted<(ntosort)){
+    unassigned=whichRcpp(nondomorder==0);
+    NonDom=whichRcpp(!do_is_dominated(subcolNM(points,whichRcpp(nondomorder==0))));
+    nsorted=nsorted+NonDom.length();
+    NonDomLevel++;
+    for (i=0;i<NonDom.length();i++){
+      nondomorder[unassigned[NonDom[i]]]=NonDomLevel;
+    }
   }
   return(nondomorder);
+}
 
+NumericVector stl_sort(NumericVector x) {
+  NumericVector y = clone(x);
+  std::sort(y.begin(), y.end());
+  return y;
+}
+
+// [[Rcpp::export]]
+NumericVector calculate_crowding(NumericMatrix scores){
+  int population_size = scores.ncol();
+  int number_of_scores = scores.nrow();
+
+  NumericMatrix crowding_matrix(number_of_scores,population_size);
+  crowding_matrix.fill(0);
+  NumericMatrix normed_scores = scores;
+  for (int i=0;i<number_of_scores;i++){
+    normed_scores.row(i)=(normed_scores.row(i)-min(normed_scores.row(i)))/(max(normed_scores.row(i))-min(normed_scores.row(i)));
+  }
+
+  for (int i=0;i<number_of_scores;i++){
+    NumericVector crowding(population_size);
+    crowding.fill(0);
+    crowding(0) = 1e+10;
+    crowding(population_size - 1) = 1e+10;
+    NumericVector sorted_scores = stl_sort(normed_scores(i,_));
+    IntegerVector sorted_scores_index = orderRcpp(normed_scores(i,_))-1;
+    for (int j=1;j<(population_size-1);j++){
+      crowding[j] = (sorted_scores(j+1)-sorted_scores(j-1));
+    }
+    NumericVector sorted_crowding(population_size);
+    sorted_crowding.fill(0);
+    for (int j=0;j<population_size;j++){
+      sorted_crowding(sorted_scores_index(j))=crowding(j);
+    }
+    crowding_matrix(i, _) = sorted_crowding;
+  }
+  NumericVector   crowding_distances = colSums(crowding_matrix);
+  return crowding_distances;
+}
+
+
+
+NumericVector calculate_crowdingAll(NumericMatrix scores, IntegerVector NonDomOrd){
+  int N=NonDomOrd.length();
+  int Nlevels=max(NonDomOrd);
+  NumericVector crowding_distances(N);
+  for (int l=0;l<Nlevels;l++){
+   IntegerVector indicestogetcrowd=whichRcpp(NonDomOrd==(l+1));
+   NumericVector CrDistLevel=calculate_crowding(subcolNM(scores,indicestogetcrowd));
+    for (int i=0;i<indicestogetcrowd.length();i++){
+      crowding_distances(indicestogetcrowd(i))=CrDistLevel(i);
+    }
+  }
+
+
+  return crowding_distances;
+}
+
+
+int tournament_selectionbest(NumericVector CrowdDist,IntegerVector DomOrder){
+  int N=CrowdDist.length();
+  int soln;
+  IntegerVector sample12=sample(N,2)-1;
+  if (DomOrder(sample12(0))<DomOrder(sample12(1))){
+     soln=sample12(0);
+  }
+  if (DomOrder(sample12(0))>DomOrder(sample12(1))){
+    soln=sample12(1);
+  }
+  if (DomOrder(sample12(0))==DomOrder(sample12(1))){
+     if (CrowdDist(sample12(0))>=CrowdDist(sample12(1))){
+     soln=sample12(0);
+  } else {
+     soln=sample12(1);
+  }
+  }
+
+  return soln;
+}
+
+
+int tournament_selectionworst(NumericVector CrowdDist,IntegerVector DomOrder){
+  int N=CrowdDist.length();
+  int soln;
+  IntegerVector sample12=sample(N,2)-1;
+  if (DomOrder(sample12(0))>DomOrder(sample12(1))){
+    soln=sample12(0);
+  }
+  if (DomOrder(sample12(0))<DomOrder(sample12(1))){
+    soln=sample12(1);
+  }
+  if (DomOrder(sample12(0))==DomOrder(sample12(1))){
+    if (CrowdDist(sample12(0))<=CrowdDist(sample12(1))){
+      soln=sample12(0);
+    } else {
+      soln=sample12(1);
+    }
+  }
+  return soln;
 }
 
 
@@ -576,6 +714,7 @@ private:
   int nOMS=0;
   int nUOMS=0;
   int nDBL=0;
+  int nINT=nBOOL+nOS+nUOS+nOMS+nUOMS;
 
   IntegerVector nvecBOOL;
   IntegerVector nvecOS;
@@ -743,6 +882,7 @@ public:
                   iiDBL++;
                 }
                 nDBL=iiDBL;
+                nINT=nBOOL+nOS+nUOS+nOMS+nUOMS;
   }
 
   void Init(vector<IntegerMatrix> BOOL_, vector<IntegerMatrix> OS_,vector<IntegerMatrix> UOS_,vector<IntegerMatrix> OMS_,vector<IntegerMatrix> UOMS_, vector<NumericMatrix>DBL_){
@@ -874,7 +1014,8 @@ public:
         int DBLirows=DBL.at(i).nrow();
         NumericVector TempSol;
         for (int j=0;j<DBLirows;j++){
-          TempSol.push_back(.5*(DBL.at(i)(j,p1)+DBL.at(i)(j,p2)));
+          double rnum= runif(1)(0);
+          TempSol.push_back(rnum*(DBL.at(i)(j,p1)+(1-rnum)*DBL.at(i)(j,p2)));
         }
         DBL.at(i)(_,child)=TempSol;
       }
@@ -1017,7 +1158,7 @@ public:
           double mutp=runif(1)(0);
           double tempsold;
           if (mutp<MUTPROB){
-            tempsold=IndSol[j]+rnorm(1)(0)*sd(DBL.at(i)(j,_))*.01;
+            tempsold=IndSol[j]+rnorm(1)(0)*(.1+sd(DBL.at(i)(j,_))*.1);
             if (tempsold<CandDBL.at(i)(0)){tempsold=tempsold<CandDBL.at(i)(0);}
             if (tempsold>CandDBL.at(i)(1)){tempsold=tempsold<CandDBL.at(i)(1);}
 
@@ -1227,9 +1368,11 @@ public:
   }
 
   void set_Fitness(int ind, Function Stat){
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       FitnessVals[ind]=StatClass.GetStat(getSolnInt(ind),getSolnDbl(ind), Stat);
-    } else {
+    } else if (nDBL>0 & nINT==0){
+      FitnessVals[ind]=StatClass.GetStat(getSolnDbl(ind), Stat);
+      }else {
       FitnessVals[ind]=StatClass.GetStat(getSolnInt(ind), Stat);
     }
   }
@@ -1240,9 +1383,11 @@ public:
 
   double get_Fitness(int ind, Function Stat){
     double out;
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       out=StatClass.GetStat(getSolnInt(ind),getSolnDbl(ind), Stat);
-    } else {
+    }else if (nDBL>0 & nINT==0){
+      out=StatClass.GetStat(getSolnDbl(ind), Stat);
+    }   else {
       out=StatClass.GetStat(getSolnInt(ind), Stat);
     }
     return out;
@@ -1251,8 +1396,10 @@ public:
 
   double get_Fitness(IntegerVector soln_int, NumericVector soln_dbl, Function Stat){
     double out;
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       out=StatClass.GetStat(soln_int,soln_dbl, Stat);
+    }else if (nDBL>0 & nINT==0){
+      out=StatClass.GetStat(soln_dbl, Stat);
     } else {
       out=StatClass.GetStat(soln_int, Stat);
     }
@@ -1467,7 +1614,7 @@ public:
         tryCount++;
       }
       if (tryCount==10000){
-        Rcout << "No feasible solution found in 10000 (warmup) iterations! \n Try restart??." << std::endl;
+        Rcout << "No feasible solution found in 10000 (warmup) iterations! \n Try restart or reformulate the problem??." << std::endl;
       }
       R_CheckUserInterrupt();
       if (Generation > MINITBEFSTOP) {
@@ -1714,6 +1861,7 @@ private:
   int nOMS=0;
   int nUOMS=0;
   int nDBL=0;
+  int nINT=nBOOL+nOS+nUOS+nOMS+nUOMS;
 
   IntegerVector nvecBOOL;
   IntegerVector nvecOS;
@@ -1875,6 +2023,8 @@ public:
                   iiDBL++;
                 }
                 nDBL=iiDBL;
+                nINT=nBOOL+nOS+nUOS+nOMS+nUOMS;
+
   }
 
   void Init(vector<IntegerMatrix> BOOL_,vector<IntegerMatrix> OS_,vector<IntegerMatrix> UOS_,vector<IntegerMatrix> OMS_,vector<IntegerMatrix> UOMS_, vector<NumericMatrix>DBL_){
@@ -2008,7 +2158,8 @@ public:
         int DBLirows=DBL.at(i).nrow();
         NumericVector TempSol;
         for (int j=0;j<DBLirows;j++){
-          TempSol.push_back(.5*(DBL.at(i)(j,p1)+DBL.at(i)(j,p2)));
+          double rnum=runif(1)(0);
+          TempSol.push_back(rnum*DBL.at(i)(j,p1)+(1-rnum)*DBL.at(i)(j,p2));
         }
         DBL.at(i)(_,child)=TempSol;
       }
@@ -2153,7 +2304,7 @@ public:
           double mutp=runif(1)(0);
           double tempsold;
           if (mutp<MUTPROB){
-            tempsold=IndSol[j]+rnorm(1)(0)*sd(DBL.at(i)(j,_))*.01;
+            tempsold=IndSol[j]+rnorm(1)(0)*(.1+sd(DBL.at(i)(j,_))*.1);
             if (tempsold<CandDBL.at(i)(0)){tempsold=tempsold<CandDBL.at(i)(0);}
             if (tempsold>CandDBL.at(i)(1)){tempsold=tempsold<CandDBL.at(i)(1);}
 
@@ -2454,8 +2605,10 @@ public:
   }
 
   void set_Fitness(int ind, Function Stat){
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       FitnessVals(_, ind)=StatClass.GetStat(getSolnInt(ind),getSolnDbl(ind), Stat);
+    } else if (nDBL>0 & nINT==0) {
+      FitnessVals(_, ind)=StatClass.GetStat(getSolnDbl(ind), Stat);
     } else {
       FitnessVals(_, ind)=StatClass.GetStat(getSolnInt(ind), Stat);
     }
@@ -2467,9 +2620,11 @@ public:
 
   NumericVector get_Fitness(int ind, Function Stat){
     NumericVector out;
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       out=StatClass.GetStat(getSolnInt(ind),getSolnDbl(ind), Stat);
-    } else {
+    } else if (nDBL>0 & nINT==0){
+      out=StatClass.GetStat(getSolnDbl(ind), Stat);
+      } else  {
       out=StatClass.GetStat(getSolnInt(ind), Stat);
     }
     return out;
@@ -2478,8 +2633,10 @@ public:
 
   NumericVector get_Fitness(IntegerVector soln_int, NumericVector soln_dbl, Function Stat){
     NumericVector out;
-    if (nDBL>0){
+    if (nDBL>0 & nINT>0){
       out=StatClass.GetStat(soln_int,soln_dbl, Stat);
+    } else if (nDBL>0 & nINT==0){
+      out=StatClass.GetStat(soln_dbl, Stat);
     } else {
       out=StatClass.GetStat(soln_int, Stat);
     }
@@ -2611,104 +2768,54 @@ public:
 
     int Generation = 0;
     Progress p(NITERGA, PROGRESS);
-    LogicalVector dominatedbool=do_is_dominated(pop.get_Fitness());
-    LogicalVector duplicated = duplicatedRcpp(transpose(pop.get_Fitness()));
 
-    IntegerVector bestsols =  whichRcpp((!dominatedbool & ! duplicated));
-    IntegerVector worstsols = whichRcpp((dominatedbool | duplicated));
-
-
-
-
-    while (!maxiter) {
-
-      //thinning
-      if (worstsols.length()<10){
-        /**NumericVector prob(pop.get_npop());
-
-         for (int i=0;i<pop.get_npop();i++){
-         std::fill(prob.begin(),prob.end(),1);
-         for (int i=0;i<pop.get_Fitness().nrow();i++){
-         double mean_E =sum(pop.get_Fitness()(i,_))/pop.get_npop();
-         double sd_E=sd(pop.get_Fitness()(i,_));
-         for (int j=0;j<pop.get_npop();j++){
-         double x=pop.get_Fitness()(i,j);
-         NumericVector xvec={x};
-         prob[j]=prob[j]*(10+Rcpp::dnorm(xvec,mean_E,sd_E+1e-6,false)[0]);
-         }
-         }
-         }
-         worstsols=sample(bestsols,10, false, prob);
-         **/
-        worstsols=sample(bestsols,10, false);
-
-        bestsols=setdiff(bestsols,worstsols);
-      }
-      if (bestsols.length()<10){
-        /** NumericVector prob(pop.get_npop());
-         for (int i=0;i<pop.get_npop();i++){
-         std::fill(prob.begin(),prob.end(),1);
-         for (int i=0;i<pop.get_Fitness().nrow();i++){
-         double mean_E =sum(pop.get_Fitness()(i,_))/pop.get_npop();
-         double sd_E=sd(pop.get_Fitness()(i,_));
-         for (int j=0;j<pop.get_npop();j++){
-         double x=pop.get_Fitness()(i,j);
-         NumericVector xvec={x};
-         prob[j]=prob[j]*1/(10+Rcpp::dnorm(xvec,mean_E,sd_E+1e-6,false)[0]);
-         }
-         }
-         }
-         bestsols=sample(worstsols,10, false, prob);
-         **/
-        bestsols=sample(worstsols,10, false);
-
-        worstsols=setdiff(worstsols,bestsols);
-      }
-
+    while (!maxiter){
+           //thinning
       p.increment();
-      R_CheckUserInterrupt();
       Generation++;
       if (Generation == NITERGA) {
         Rcout << "Maximum number of iterations reached." << std::endl;
         maxiter = true;
       }
 
-      Best_Vals=pop.get_Fitness(bestsols);
-      for (int i=0;i<worstsols.length();i++){
-        NumericVector prob(bestsols.length());
-        std::fill(prob.begin(),prob.end(),1);
-        for (int i=0;i<Best_Vals.nrow();i++){
-          double mean_E =sum(Best_Vals(i,_))/bestsols.length();
-          double sd_E=sd(Best_Vals(i,_));
-          for (int j=0;j<bestsols.length();j++){
-            double x=Best_Vals(i,j);
-            NumericVector xvec={x};
-            prob[j]=prob[j]*1/(10+Rcpp::dnorm(xvec,mean_E,sd_E+1e-4,false)[0]);
-          }
+
+
+
+      for (int i=0;i<ceil(pop.get_npop()*.5);i++){
+        IntegerVector NonDomOrder=nondominated_order(pop.get_Fitness());
+        NumericVector CrowdingDist=calculate_crowdingAll(pop.get_Fitness(),NonDomOrder);
+        LogicalVector dominatedbool=do_is_dominated(pop.get_Fitness());
+        LogicalVector duplicated = duplicatedRcpp(transpose(pop.get_Fitness()));
+        IntegerVector bestsols =  whichRcpp((!dominatedbool & ! duplicated));
+        LogicalVector worstsolsBool =  (dominatedbool |  duplicated);
+        IntegerVector worstsols =  whichRcpp(worstsolsBool);
+        int p1=tournament_selectionbest(CrowdingDist,NonDomOrder);
+        int p2=tournament_selectionbest(CrowdingDist,NonDomOrder);
+        if (worstsols.length()>5){
+        int c1=tournament_selectionworst(CrowdingDist[worstsolsBool],NonDomOrder[worstsolsBool]);
+        pop.MakeCross(p1,p2,worstsols[c1]);
+        pop.Mutate(worstsols[c1],MUTPROB);
+        pop.set_Fitness(worstsols[c1], Stat);
+        } else {
+          int c1=tournament_selectionworst(CrowdingDist,NonDomOrder);
+          pop.MakeCross(p1,p2,c1);
+          pop.Mutate(c1,MUTPROB);
+          pop.set_Fitness(c1, Stat);
         }
-
-        int p1=sample(bestsols,1, false, prob)(0);
-        int p2=sample(bestsols,1, false, prob)(0);
-        pop.MakeCross(p1,p2,worstsols[i]);
-        pop.Mutate(worstsols[i],MUTPROB);
-        pop.set_Fitness(worstsols[i], Stat);
       }
-
-      dominatedbool=do_is_dominated(pop.get_Fitness());
-      duplicated = duplicatedRcpp(transpose(pop.get_Fitness()));
-
-      bestsols =  whichRcpp((!dominatedbool & ! duplicated));
-      worstsols = whichRcpp((dominatedbool | duplicated));
-
-
     }
+
+
+   LogicalVector dominatedbool=do_is_dominated(pop.get_Fitness());
+   LogicalVector duplicated = duplicatedRcpp(transpose(pop.get_Fitness()));
+
+   IntegerVector bestsols =  whichRcpp((!dominatedbool & ! duplicated));
+
 
     Best_Sols_Int=pop.getSolnInt(bestsols);
     Best_Sols_DBL=pop.getSolnDbl(bestsols);
     Best_Vals=pop.get_Fitness(bestsols);
-
-
-
+    R_CheckUserInterrupt();
 
   }
 

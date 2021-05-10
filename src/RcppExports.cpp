@@ -17,6 +17,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calculate_crowding
+NumericVector calculate_crowding(NumericMatrix scores);
+RcppExport SEXP _TrainSel_calculate_crowding(SEXP scoresSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type scores(scoresSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculate_crowding(scores));
+    return rcpp_result_gen;
+END_RCPP
+}
 // TrainSelC
 List TrainSelC(List Data, List CANDIDATES, Rcpp::IntegerVector setsizes, Rcpp::CharacterVector settypes, Rcpp::Function Stat, bool CD, Rcpp::IntegerVector Target, List control, int ntotal);
 RcppExport SEXP _TrainSel_TrainSelC(SEXP DataSEXP, SEXP CANDIDATESSEXP, SEXP setsizesSEXP, SEXP settypesSEXP, SEXP StatSEXP, SEXP CDSEXP, SEXP TargetSEXP, SEXP controlSEXP, SEXP ntotalSEXP) {
@@ -96,6 +107,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_TrainSel_nearPDc", (DL_FUNC) &_TrainSel_nearPDc, 1},
+    {"_TrainSel_calculate_crowding", (DL_FUNC) &_TrainSel_calculate_crowding, 1},
     {"_TrainSel_TrainSelC", (DL_FUNC) &_TrainSel_TrainSelC, 9},
     {"_TrainSel_TrainSelCMOO", (DL_FUNC) &_TrainSel_TrainSelCMOO, 7},
     {"_TrainSel_Kmatfunc", (DL_FUNC) &_TrainSel_Kmatfunc, 1},
