@@ -885,6 +885,8 @@ public:
                 nINT=nBOOL+nOS+nUOS+nOMS+nUOMS;
   }
 
+
+
   void Init(vector<IntegerMatrix> BOOL_, vector<IntegerMatrix> OS_,vector<IntegerMatrix> UOS_,vector<IntegerMatrix> OMS_,vector<IntegerMatrix> UOMS_, vector<NumericMatrix>DBL_){
     BOOL=BOOL_;
     OS=OS_;
@@ -1323,6 +1325,7 @@ public:
 
 
 
+
   NumericVector getSolnDbl(int ind){
     NumericVector soln;
     int iDBL=0;
@@ -1355,7 +1358,33 @@ public:
     }
   }
 
+
+
+  void InitInitSolInt(IntegerMatrix soln_intMat){
+    int sampInit_int;
+    for (int i=0;i<(npop+nelite); i++){
+
+      sampInit_int=sample(soln_intMat.ncol(), 1)(0)-1;
+      putSolnInt(i, soln_intMat(_,sampInit_int));
+
+
+
+    }
+  }
+
+  void InitInitSolDBL(NumericMatrix soln_DBLMat){
+    int sampDBL_int;
+    for (int i=0;i<(npop+nelite); i++){
+
+        sampDBL_int=sample(soln_DBLMat.ncol(), 1)(0)-1;
+        putSolnDbl(i, soln_DBLMat(_,sampDBL_int));
+
+    }
+  }
   ///////////
+
+
+
 
 
   void set_STATCLASS(STATCLASS STATC_){
@@ -1458,7 +1487,8 @@ public:
               bool CD,
               Rcpp::IntegerVector Target,
               List control,
-              int ntotal) {
+              int ntotal,
+              List InitSol) {
 
 
     int NPOP = as<int>(control["npop"]);
@@ -1470,6 +1500,10 @@ public:
     double TOLCONV = as<double>(control["tolconv"]);
     int MINITBEFSTOP = as<int>(control["minitbefstop"]);
     bool PROGRESS = as<bool>(control["progress"]);
+
+
+    IntegerMatrix InitSolIntMat=as<IntegerMatrix>(InitSol["solnIntMat"]);
+    NumericMatrix InitSolDBLMat=as<NumericMatrix>(InitSol["solnDBLMat"]);
 
 
     bool maxiter = false;
@@ -1599,9 +1633,20 @@ public:
 
     pop.InitRand();
 
+    if (InitSolIntMat.ncol()>0){
+      pop.InitInitSolInt(InitSolIntMat);
+    }
+
+    if (InitSolDBLMat.ncol()>0){
+      pop.InitInitSolDBL(InitSolDBLMat);
+    }
+
+
     for (int i=0;i<pop.get_npop();i++){
       pop.set_Fitness(i, Stat);
     }
+
+
     int Generation = 0;
     Progress p(NITERGA, PROGRESS);
     int tryCount=0;
@@ -1742,7 +1787,8 @@ List TrainSelC(List Data,
                bool CD,
                Rcpp::IntegerVector Target,
                List control,
-               int ntotal) {
+               int ntotal,
+               List InitSol) {
 
   OutTrainSel out(Data,
                   CANDIDATES,
@@ -1752,7 +1798,8 @@ List TrainSelC(List Data,
                   CD,
                   Target,
                   control,
-                  ntotal);
+                  ntotal,
+                  InitSol);
   return out.getSol();
 
 }
@@ -2592,6 +2639,29 @@ public:
     }
   }
 
+
+
+  void InitInitSolInt(IntegerMatrix soln_intMat){
+    int sampInit_int;
+    for (int i=0;i<(npop); i++){
+
+      sampInit_int=sample(soln_intMat.ncol(), 1)(0)-1;
+      putSolnInt(i, soln_intMat(_,sampInit_int));
+
+
+
+    }
+  }
+
+  void InitInitSolDBL(NumericMatrix soln_DBLMat){
+    int sampDBL_int;
+    for (int i=0;i<(npop); i++){
+
+      sampDBL_int=sample(soln_DBLMat.ncol(), 1)(0)-1;
+      putSolnDbl(i, soln_DBLMat(_,sampDBL_int));
+
+    }
+  }
   ///////////
 
 
@@ -2686,7 +2756,8 @@ public:
                  Rcpp::CharacterVector settypes,
                  Rcpp::Function Stat,
                  int nstat,
-                 List control) {
+                 List control,
+                 List InitSol) {
 
 
     int NPOP = as<int>(control["npop"]);
@@ -2702,6 +2773,9 @@ public:
       CheckData = true;
     }
 
+
+    IntegerMatrix InitSolIntMat=as<IntegerMatrix>(InitSol["solnIntMat"]);
+    NumericMatrix InitSolDBLMat=as<NumericMatrix>(InitSol["solnDBLMat"]);
 
 
     /////errors
@@ -2760,11 +2834,19 @@ public:
 
     pop.InitRand();
 
-    for (int i=0;i<pop.get_npop();i++){
-
-      pop.set_Fitness(i, Stat);
-
+    if (InitSolIntMat.ncol()>0){
+      pop.InitInitSolInt(InitSolIntMat);
     }
+
+    if (InitSolDBLMat.ncol()>0){
+      pop.InitInitSolDBL(InitSolDBLMat);
+    }
+
+
+    for (int i=0;i<pop.get_npop();i++){
+      pop.set_Fitness(i, Stat);
+    }
+
 
     int Generation = 0;
     Progress p(NITERGA, PROGRESS);
@@ -2839,7 +2921,8 @@ List TrainSelCMOO(List Data,
                   Rcpp::CharacterVector settypes,
                   Rcpp::Function Stat,
                   int  nstat,
-                  List control) {
+                  List control,
+                  List InitSol) {
 
   OutTrainSelMOO out(Data,
                      CANDIDATES,
@@ -2847,7 +2930,8 @@ List TrainSelCMOO(List Data,
                      settypes,
                      Stat,
                      nstat,
-                     control);
+                     control,
+                     InitSol);
   return out.getSol();
 
 }

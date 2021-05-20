@@ -92,7 +92,7 @@ if (!is.null(X)){
 ##############################################
 
 ##########################TrainSel
-TrainSel <-
+TrainSelInner <-
   function(Data = NULL,
            Candidates = NULL,
            setsizes = NULL,
@@ -101,7 +101,8 @@ TrainSel <-
            Stat = NULL,
            nStat= 1,
            Target = NULL,
-           control = NULL) {
+           control = NULL,
+           InitSol=NULL) {
 
 
 
@@ -152,14 +153,92 @@ if (!is.function(Stat)){
     }
 
 
+if (is.null(InitSol)){
+InitSol<-list(solnIntMat=matrix(as.integer(c()), ncol=0, nrow=0),solnDBLMat=matrix(as.numeric(c()), ncol=0, nrow=0) )
+} else {
+  solnIntMat<-InitSol[["solnIntMat"]]
+  solnDBLMat<-InitSol[["solnDBLMat"]]
+  if (is.null(solnIntMat)){
+    solnIntMat=matrix(as.integer(c()), ncol=0, nrow=0)
+  }
+  if (is.null(solnDBLMat)){
+    solnDBLMat=matrix(as.numeric(c()), ncol=0, nrow=0)
+  }
+  InitSol<-list(solnIntMat=solnIntMat,solnDBLMat=solnDBLMat)
+}
+
 if (nStat==1){
-out<-TrainSelC(Data=Data, CANDIDATES =Candidates,setsizes =setsizes,settypes=settypes,Stat = Stat,CD=CD,Target=Target,control=control, ntotal=ntotal)
+out<-TrainSelC(Data=Data, CANDIDATES =Candidates,setsizes =setsizes,settypes=settypes,Stat = Stat,CD=CD,Target=Target,control=control, ntotal=ntotal, InitSol=InitSol)
 class(out)<-"TrainSelOut"
 } else {
-out<-TrainSelCMOO(Data=Data, CANDIDATES =Candidates,setsizes =setsizes,settypes=settypes,Stat = Stat,nstat=nStat, control=control)
+out<-TrainSelCMOO(Data=Data, CANDIDATES =Candidates,setsizes =setsizes,settypes=settypes,Stat = Stat,nstat=nStat, control=control, InitSol=InitSol)
 class(out)<-"TrainSelOut"
 }
   return(out)
+}
+
+
+TrainSel<-
+  function(Data = NULL,
+           Candidates = NULL,
+           setsizes = NULL,
+           ntotal = NULL,
+           settypes = NULL,
+           Stat = NULL,
+           nStat= 1,
+           Target = NULL,
+           control = NULL,
+           InitSol=NULL) {
+
+    nislands<-control[["nislands"]]
+    mc.cores<-control[["mc.cores"]]
+
+if (nislands==1){
+
+  out<-TrainSelInner(Data = Data,
+                Candidates = Candidates,
+                setsizes = setsizes,
+                ntotal = ntotal ,
+                settypes = settypes,
+                Stat = Stat,
+                nStat= nStat,
+                Target = Target,
+                control = control,
+                InitSol=InitSol)
+} else {
+  controlInner<-control
+  controlInner$progress=FALSE
+  solList<-parallel::mclapply(1:nislands, function(x){TrainSelInner(Data = Data,
+                                                               Candidates = Candidates,
+                                                               setsizes = setsizes,
+                                                               ntotal = ntotal ,
+                                                               settypes = settypes,
+                                                               Stat = Stat,
+                                                               nStat= nStat,
+                                                               Target = Target,
+                                                               control = controlInner)}, mc.cores=mc.cores)
+  solnIntMat<-NULL
+  solnDBLMat<-NULL
+  if (length(intersect(settypes,c("BOOL","UOS","UOMS","OS","OMS")))>0){
+    solnIntMat<-sapply(solList, function(x){x$BestSol_int})
+  }
+  if (length(intersect(settypes,c("DBL")))>0){
+    solnDBLMat<-sapply(solList, function(x){x$BestSol_DBL})
+ }
+    InitSol<-list(solnIntMat=solnIntMat, solnDBLMat=solnDBLMat)
+    out<-TrainSelInner(Data = Data,
+                  Candidates = Candidates,
+                  setsizes = setsizes,
+                  ntotal = ntotal ,
+                  settypes = settypes,
+                  Stat = Stat,
+                  nStat= nStat,
+                  Target = Target,
+                  control = control,
+                  InitSol=InitSol)
+
+}
+return(out)
 }
 
 
@@ -185,7 +264,9 @@ TrainSelControl <-
            stepSANN = 1e-2,
            minitbefstop = 200,
            tolconv = 1e-7,
-           progress=TRUE)
+           progress=TRUE,
+           nislands=1,
+           mc.cores=1)
   {
     structure(
       list(
@@ -198,7 +279,9 @@ TrainSelControl <-
         stepSANN = stepSANN,
         minitbefstop = minitbefstop,
         tolconv = tolconv,
-        progress=progress
+        progress=progress,
+        nislands=nislands,
+        mc.cores=mc.cores
       ),
       class = c("TrainSel_Control")
     )

@@ -17,7 +17,9 @@ TrainSelControl(npop = 300,
            stepSANN = 1e-2,
            minitbefstop = 200,
            tolconv = 1e-7,
-           progress=TRUE)
+           progress=TRUE,
+           nislands=1,
+           mc.cores=1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,6 +39,8 @@ Number of simmulated annealing iterations for each elite solution at each cycle 
 \item{minitbefstop}{If the GA does not improve the objective function more than 'tolconv' in the last 'minitbefstop' iterations the algorithm will stop.}
 \item{tolconv}{Default value is 1e-7. Covergence tolerance parameter.}
 \item{progress}{Default value is  TRUE. Shows the progress of the algorithm if TRUE.}
+\item{nislands}{Default value is  1.  Values >1 will firts run the optimization algorithm independently on nislands islands. The best solutions from these island populations will be used as an initial population for another round of optimization algoritm to output a final solution. Similar strategies can be implemented manually using the 'InitSols' argument of the 'TrainSel' function.}
+\item{mc.cores}{Default value is  1.  Values >1 for 'nislands'>1 will run the island populations in parallel (see the function help file for an example).}
 }
 \details{
 Constructor function for the control parameters.

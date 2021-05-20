@@ -5,6 +5,6 @@ To install the package in R use:
 
 ```
 library(devtools)
-install_github("TheRocinante-lab/TrainSel")
+install_github("denizakdemir/TrainSel")
 
 ```

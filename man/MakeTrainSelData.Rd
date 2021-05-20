@@ -6,7 +6,7 @@ Create a data of class 'TrainSel_Data'.
 }
 \description{
 Create a data of class 'TrainSel_Data'. This is a data preprocessor that creates
-'TrainSel_Data' for use as input in 'TrainSel'  for the 'data' parameter for the defaults mixed model based selection criteria (CDMEAN).
+'TrainSel_Data' for use as input in 'TrainSel'  for the 'data' parameter for the defaults mixed model based selection criteria (CDmin).
 }
 \usage{
 MakeTrainSelData(M = NULL,

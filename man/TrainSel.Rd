@@ -15,7 +15,8 @@ TrainSel(Data = NULL,
            Stat = NULL,
            nStat= 1,
            Target = NULL,
-           control = NULL)
+           control = NULL,
+           InitSol=NULL)
 }
 \arguments{
   \item{Data}{This is either a 'TrainSel_Data' object created by 'MakeTrainSelData' function or it is a list that contains the data to be used by the user defined optimization criteria. It can be null if the user defined function only has no "Data" argument (for instance, when the data is called from the R environment).}
@@ -31,7 +32,7 @@ TrainSel(Data = NULL,
 }
 \item{control}{NULL or a TrainSel_Control object created by 'TrainSelControl'.
 }
-}
+\item{InitSol}{NULL or a list of initial solutions matrices for integer and/or double parts (for example: InitSol=list(solnIntMat=solnIntMat,solnDBLMat=solnDBLMat), or InitSol=list(solnIntMat=solnIntMat), or InitSol=list(solnDBLMat=solnDBLMat))}}
 \details{
 
 TrainSel package is composed of a set of programs that work for optimally selecting ordered or unordered samples (set or multi-set) from a set of candidates, or several ordered or unordered samples (set or multi-set) from several sets of candidates based on of one (or more) optimization criterion. There is also some support for solving mixed-integer optimization problems and muti-objective optimization.
@@ -178,6 +179,54 @@ PCData<-svd(scale(Wheat.M, scale=FALSE,center=TRUE))$u[,1:10]
 sol4<-TrainSel(Data=list(PCData), Candidates=list(1:200),
 setsizes=c(50), Stat=Doptfunc,settypes="UOS", control=control)
 sol4
-}
 
+#######################################
+###initial population and an islands model manually
+############
+data(WheatData)
+controlInner<-TrainSelControl()
+controlInner$niterations=30 # increase this for convergence.
+controlInner$npop=30 # increase this for convergence.
+controlInner$nelite=3
+controlInner$niterSANN=10
+controlInner$progress=FALSE
+controlInner$minitbefstop=20
+
+TSDAT <- MakeTrainSelData(M = Wheat.M)
+
+library(parallel)
+nislands<-12
+solList<-mclapply(1:nislands, function(x){TrainSel(Data=TSDAT,Candidates=list(1:200),
+               setsizes=c(50), settypes="UOS", Stat=NULL,
+               control=controlInner)},mc.cores=3)
+
+for (repi in 1:3){
+print(repi)
+solnIntMat<-sapply(solList, function(x){x$BestSol_int})
+InitSol<-list(solnIntMat=solnIntMat)
+
+solList<-mclapply(1:nislands, function(x){TrainSel(Data=TSDAT,Candidates=list(1:200),
+                                            setsizes=c(50), settypes="UOS", Stat=NULL,
+                                            control=controlInner, InitSol = InitSol)}, mc.cores=3)
+}
+solnIntMat<-sapply(solList, function(x){x$BestSol_int})
+
+
+
+controlOuter<-TrainSelControl()
+controlOuter$niterations<-50
+controlOuter$niterSANN<-10
+
+sol<-TrainSel(Data=TSDAT,Candidates=list(1:200),
+               setsizes=c(50), settypes="UOS", Stat=NULL,
+               control=controlOuter, InitSol = InitSol)
+
+
+plot(sol$maxvec)
+sol$BestVal
+
+#######################################
+###initial population and an islands model manually (END)
+############
+}
 }

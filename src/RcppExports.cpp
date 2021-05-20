@@ -2,10 +2,23 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
 
+// r_score
+float r_score(Eigen::MatrixXd x, Eigen::MatrixXd x0);
+RcppExport SEXP _TrainSel_r_score(SEXP xSEXP, SEXP x0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type x0(x0SEXP);
+    rcpp_result_gen = Rcpp::wrap(r_score(x, x0));
+    return rcpp_result_gen;
+END_RCPP
+}
 // nearPDc
 arma::mat nearPDc(arma::mat X);
 RcppExport SEXP _TrainSel_nearPDc(SEXP XSEXP) {
@@ -29,8 +42,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // TrainSelC
-List TrainSelC(List Data, List CANDIDATES, Rcpp::IntegerVector setsizes, Rcpp::CharacterVector settypes, Rcpp::Function Stat, bool CD, Rcpp::IntegerVector Target, List control, int ntotal);
-RcppExport SEXP _TrainSel_TrainSelC(SEXP DataSEXP, SEXP CANDIDATESSEXP, SEXP setsizesSEXP, SEXP settypesSEXP, SEXP StatSEXP, SEXP CDSEXP, SEXP TargetSEXP, SEXP controlSEXP, SEXP ntotalSEXP) {
+List TrainSelC(List Data, List CANDIDATES, Rcpp::IntegerVector setsizes, Rcpp::CharacterVector settypes, Rcpp::Function Stat, bool CD, Rcpp::IntegerVector Target, List control, int ntotal, List InitSol);
+RcppExport SEXP _TrainSel_TrainSelC(SEXP DataSEXP, SEXP CANDIDATESSEXP, SEXP setsizesSEXP, SEXP settypesSEXP, SEXP StatSEXP, SEXP CDSEXP, SEXP TargetSEXP, SEXP controlSEXP, SEXP ntotalSEXP, SEXP InitSolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,13 +56,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type Target(TargetSEXP);
     Rcpp::traits::input_parameter< List >::type control(controlSEXP);
     Rcpp::traits::input_parameter< int >::type ntotal(ntotalSEXP);
-    rcpp_result_gen = Rcpp::wrap(TrainSelC(Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal));
+    Rcpp::traits::input_parameter< List >::type InitSol(InitSolSEXP);
+    rcpp_result_gen = Rcpp::wrap(TrainSelC(Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal, InitSol));
     return rcpp_result_gen;
 END_RCPP
 }
 // TrainSelCMOO
-List TrainSelCMOO(List Data, List CANDIDATES, Rcpp::IntegerVector setsizes, Rcpp::CharacterVector settypes, Rcpp::Function Stat, int nstat, List control);
-RcppExport SEXP _TrainSel_TrainSelCMOO(SEXP DataSEXP, SEXP CANDIDATESSEXP, SEXP setsizesSEXP, SEXP settypesSEXP, SEXP StatSEXP, SEXP nstatSEXP, SEXP controlSEXP) {
+List TrainSelCMOO(List Data, List CANDIDATES, Rcpp::IntegerVector setsizes, Rcpp::CharacterVector settypes, Rcpp::Function Stat, int nstat, List control, List InitSol);
+RcppExport SEXP _TrainSel_TrainSelCMOO(SEXP DataSEXP, SEXP CANDIDATESSEXP, SEXP setsizesSEXP, SEXP settypesSEXP, SEXP StatSEXP, SEXP nstatSEXP, SEXP controlSEXP, SEXP InitSolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,7 +74,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::Function >::type Stat(StatSEXP);
     Rcpp::traits::input_parameter< int >::type nstat(nstatSEXP);
     Rcpp::traits::input_parameter< List >::type control(controlSEXP);
-    rcpp_result_gen = Rcpp::wrap(TrainSelCMOO(Data, CANDIDATES, setsizes, settypes, Stat, nstat, control));
+    Rcpp::traits::input_parameter< List >::type InitSol(InitSolSEXP);
+    rcpp_result_gen = Rcpp::wrap(TrainSelCMOO(Data, CANDIDATES, setsizes, settypes, Stat, nstat, control, InitSol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -106,10 +121,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_TrainSel_r_score", (DL_FUNC) &_TrainSel_r_score, 2},
     {"_TrainSel_nearPDc", (DL_FUNC) &_TrainSel_nearPDc, 1},
     {"_TrainSel_calculate_crowding", (DL_FUNC) &_TrainSel_calculate_crowding, 1},
-    {"_TrainSel_TrainSelC", (DL_FUNC) &_TrainSel_TrainSelC, 9},
-    {"_TrainSel_TrainSelCMOO", (DL_FUNC) &_TrainSel_TrainSelCMOO, 7},
+    {"_TrainSel_TrainSelC", (DL_FUNC) &_TrainSel_TrainSelC, 10},
+    {"_TrainSel_TrainSelCMOO", (DL_FUNC) &_TrainSel_TrainSelCMOO, 8},
     {"_TrainSel_Kmatfunc", (DL_FUNC) &_TrainSel_Kmatfunc, 1},
     {"_TrainSel_calculatecrossvalueM1", (DL_FUNC) &_TrainSel_calculatecrossvalueM1, 3},
     {"_TrainSel_calculatecrossvalueM2", (DL_FUNC) &_TrainSel_calculatecrossvalueM2, 6},
