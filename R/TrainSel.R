@@ -219,13 +219,26 @@ if (nislands==1){
                                                                control = controlInner)}, mc.cores=mc.cores)
   solnIntMat<-NULL
   solnDBLMat<-NULL
-  if (length(intersect(settypes,c("BOOL","UOS","UOMS","OS","OMS")))>0){
-    solnIntMat<-sapply(solList, function(x){x$BestSol_int})
+  condint<-length(intersect(settypes,c("BOOL","UOS","UOMS","OS","OMS")))>0
+  conddbl<-length(intersect(settypes,c("DBL")))>0
+  if (condint){
+    solnIntMat<-lapply(solList, function(x){x$BestSol_int})
+    solnIntMat<-Reduce("cbind", solnIntMat)
   }
-  if (length(intersect(settypes,c("DBL")))>0){
-    solnDBLMat<-sapply(solList, function(x){x$BestSol_DBL})
- }
+  if (conddbl){
+    solnDBLMat<-lapply(solList, function(x){x$BestSol_DBL})
+    solnDBLMat<-Reduce("cbind", solnDBLMat)
+    }
+
+  if (condint>0 & conddbl>0){
     InitSol<-list(solnIntMat=solnIntMat, solnDBLMat=solnDBLMat)
+  } else if (condint==0 & conddbl>0) {
+    InitSol<-list(solnDBLMat=solnDBLMat)
+  } else if (condint>0 & conddbl==0) {
+    InitSol<-list(solnIntMat=solnIntMat)
+  } else {
+    InitSol=NULL
+    }
     out<-TrainSelInner(Data = Data,
                   Candidates = Candidates,
                   setsizes = setsizes,
