@@ -6,5 +6,6 @@ To install the package in R use:
 ```
 library(devtools)
 install_github("TheRocinante-lab/TrainSel")
-
+On MAC Install gfortran6.3 or gfortran8.2 from 
+https://github.com/rmacoslib/r-macos-rtools/
 ```
