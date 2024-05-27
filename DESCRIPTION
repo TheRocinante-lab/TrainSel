@@ -5,12 +5,7 @@ Date: 2022-06-03
 Maintainer: Deniz <deniz.akdemir.work@gmail.com>
 Description: Optimally selecting ordered or unordered samples from a set of candidates, or several ordered or unordered samples from several sets of candidates.
 Imports: Rcpp (>= 1.0.3)
-Depends: R (>= 2.10), cluster, parallel
+Depends: R (>= 2.10), cluster, parallel, foreach, doParallel
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress, RcppEigen
-Version: 2.0
-
-Authors@R: c(
-  person("Deniz", "Akdemir", role = c("cre", "aut")),
-  person("StatGen", role = "cph")
-  )
+Version: 3.0
 License: file LICENSE

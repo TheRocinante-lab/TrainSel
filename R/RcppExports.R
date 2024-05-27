@@ -13,12 +13,20 @@ calculate_crowding <- function(scores) {
     .Call(`_TrainSel_calculate_crowding`, scores)
 }
 
-TrainSelC <- function(Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal, InitSol) {
-    .Call(`_TrainSel_TrainSelC`, Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal, InitSol)
+o_fd533d5f10525a0cd35b5eaa5b805b43 <- function(o_647bd66af7238268684439ea5fd0e073) {
+    .Call(`_TrainSel_o_fd533d5f10525a0cd35b5eaa5b805b43`, o_647bd66af7238268684439ea5fd0e073)
 }
 
-TrainSelCMOO <- function(Data, CANDIDATES, setsizes, settypes, Stat, nstat, control, InitSol) {
-    .Call(`_TrainSel_TrainSelCMOO`, Data, CANDIDATES, setsizes, settypes, Stat, nstat, control, InitSol)
+o_8ac3596136014076863521e808b79394 <- function(o_399493a4b6ac5ef205ba007c1c8364e7, o_039328193f0fde25c5e3497cc12f85e1, o_a578ef72809bf557d02f76ca5aaf269e) {
+    .Call(`_TrainSel_o_8ac3596136014076863521e808b79394`, o_399493a4b6ac5ef205ba007c1c8364e7, o_039328193f0fde25c5e3497cc12f85e1, o_a578ef72809bf557d02f76ca5aaf269e)
+}
+
+TrainSelC <- function(Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal, InitSol, o_4c3b474d6e250cd9804178f26306d565, o_5c85d553f3828f5855fe83513707eda8, o_d5ead238fb380c7d6fa344cc58cb043a) {
+    .Call(`_TrainSel_TrainSelC`, Data, CANDIDATES, setsizes, settypes, Stat, CD, Target, control, ntotal, InitSol, o_4c3b474d6e250cd9804178f26306d565, o_5c85d553f3828f5855fe83513707eda8, o_d5ead238fb380c7d6fa344cc58cb043a)
+}
+
+TrainSelCMOO <- function(Data, CANDIDATES, setsizes, settypes, Stat, nstat, control, InitSol, o_4c3b474d6e250cd9804178f26306d565, o_5c85d553f3828f5855fe83513707eda8, o_d5ead238fb380c7d6fa344cc58cb043a) {
+    .Call(`_TrainSel_TrainSelCMOO`, Data, CANDIDATES, setsizes, settypes, Stat, nstat, control, InitSol, o_4c3b474d6e250cd9804178f26306d565, o_5c85d553f3828f5855fe83513707eda8, o_d5ead238fb380c7d6fa344cc58cb043a)
 }
 
 Kmatfunc <- function(Markers) {

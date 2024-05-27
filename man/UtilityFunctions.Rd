@@ -11,5 +11,5 @@ Some utility functions: DOPT MaximinOPT PEVlmOPT CDMEANOPT CDMEANOPTTarget  CDME
 
 
 \author{
-Deniz Akdemir, Simon Rio, Julio Isidro Sanchez
+Deniz Akdemir, Simon Rio, Julio Isidro Sanchez, Javier Fernandez-Gonzalez
 }

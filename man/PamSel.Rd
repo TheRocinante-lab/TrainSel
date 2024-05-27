@@ -25,7 +25,7 @@ Selection by partitioning around medoids.
 \value{vector of integers that correspond to the selected rows of M.}
 
 \author{
-Deniz Akdemir, Simon Rio, Julio Isidro Sanchez
+Deniz Akdemir, Simon Rio, Julio Isidro Sanchez, Javier Fernandez-Gonzalez
 }
 
 \examples{

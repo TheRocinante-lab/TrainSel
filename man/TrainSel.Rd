@@ -16,23 +16,34 @@ TrainSel(Data = NULL,
            nStat= 1,
            Target = NULL,
            control = NULL,
-           InitSol=NULL)
+           InitSol=NULL,
+           Username=NULL,
+           Password=NULL,
+           Verbose=TRUE)
 }
 \arguments{
-  \item{Data}{This is either a 'TrainSel_Data' object created by 'MakeTrainSelData' function or it is a list that contains the data to be used by the user defined optimization criteria. It can be null if the user defined function only has no "Data" argument (for instance, when the data is called from the R environment).}
-  \item{Candidates}{A list of vectors of integers, for 'DBL' type the corresponding element in the list are the lower and upper bounds of the numeric variable of interest.}
-\item{setsizes}{A vector of integers. Number of samples in each of the samples.}
+  \item{Data}{This is either a 'TrainSel_Data' object created by 'MakeTrainSelData' function or it is a list that contains the data to be used by the user defined optimization criteria. It can be null if the user defined function has no "Data" argument (for instance, when the data is called from the R environment).}
+  \item{Candidates}{A list of vectors of integers. For 'DBL' type, the corresponding element in the list is a vector with the lower and upper bounds of the numeric variable of interest.}
+\item{setsizes}{A vector of integers. Number of samples from each of the elements in 'Candidates'.}
 \item{ntotal}{An integer value. The total number of unique integers in 'BestSoln_int' in the in the final solution. Default value is 0 which means no ntotal constraint is applied. When ntotal>0 and number of unique integers in the solution is not equal to ntotal, the Stat value is set to -1e_10*abs("number of unique integers in the solution"-ntotal).}
 \item{settypes}{Six options are available:"BOOL" Boelian, "UOS" unordered sample, "UOMS" unordered multi-set, "OS" ordered set, "OMS" ordered multi-set, "DBL" numeric variables.
 }
-\item{Stat}{Either NULL (in that case CDMin is used) or a user defined function that takes an integer vector or a vector of numeric variables and possibly a Data argument. The first input is used as the vector of integers, second input is the vector of numeric values and the last input if provided is used as Data. For univariate optimization this function returns a numeric value which we want to maximize with respect to the integer vector. Note that integer vector is considered to be the concatenation of the "OS", "UOS", "OMS", "UOMS" components provided in 'settypes', and the numeric vector corresponds to the concanetation of the 'DBL' components. There is also minimal suppoert for muti-objective optimization (see details and examples).
+\item{Stat}{Either NULL (in that case CDMin is used) or a user defined function that takes an integer vector or a vector of numeric variables and possibly a Data argument. The first input is used as the vector of integers, second input is the vector of numeric values and the last input if provided is used as Data. For univariate optimization this function returns a numeric value which we want to maximize with respect to the integer vector. Note that integer vector is considered to be the concatenation of the "OS", "UOS", "OMS", "UOMS" components provided in 'settypes', and the numeric vector corresponds to the concanetation of the 'DBL' components. There is also minimal support for muti-objective optimization (see details and examples).
 }
 \item{nStat}{Default is 1. Set >1 for MO optimization, this is the number of objectives.}
 \item{Target}{Default is NULL. An integer vector. When used with CDMin, the CDMin is calculated on the specified Target. When used with a user defined function with  non NULL Data argument, Target is added to the Data list and can be accessed by the function in 'Stat' with "Data[["Target"]]".
 }
-\item{control}{NULL or a TrainSel_Control object created by 'TrainSelControl'.
+\item{control}{NULL or a TrainSel_Control object created by 'TrainSelControl' or 'SetControlDefault'.
 }
-\item{InitSol}{NULL or a list of initial solutions matrices for integer and/or double parts (for example: InitSol=list(solnIntMat=solnIntMat,solnDBLMat=solnDBLMat), or InitSol=list(solnIntMat=solnIntMat), or InitSol=list(solnDBLMat=solnDBLMat))}}
+\item{InitSol}{NULL or a list of initial solutions matrices for integer and/or double parts (for example: InitSol=list(solnIntMat=solnIntMat,solnDBLMat=solnDBLMat), or InitSol=list(solnIntMat=solnIntMat), or InitSol=list(solnDBLMat=solnDBLMat). In an initial solutions matrix, each column corresponds to a different solution)
+}
+\item{Username}{Integer containinig the username needed to upgrade from Demo to full version. To obtain username and password, please contact us. For more information on our contact details, you can visit https://breicongenomics.com/
+}
+\item{Password}{Integer containinig the password needed to upgrade from Demo to full version. To obtain username and password, please contact us. For more information on our contact details, you can visit https://breicongenomics.com/
+}
+\item{Verbose}{If set to true, information about the license is printed.
+}
+}
 \details{
 
 TrainSel package is composed of a set of programs that work for optimally selecting ordered or unordered samples (set or multi-set) from a set of candidates, or several ordered or unordered samples (set or multi-set) from several sets of candidates based on of one (or more) optimization criterion. There is also some support for solving mixed-integer optimization problems and muti-objective optimization.
@@ -83,34 +94,30 @@ See examples and the package vignettes for details and usage.
 Deniz Akdemir
 }
 \author{
-Deniz Akdemir, Simon Rio, Julio Isidro Sanchez
+Deniz Akdemir, Simon Rio, Julio Isidro Sanchez, Javier Fernandez-Gonzalez
 }
 
 \examples{
 \dontrun{
 
-###changing control so that the algorithm runs
-##in a short time. You need more than 5 iterations
-##for convergence!
-control<-TrainSelControl()
-control$niterations=5
 ##############################
 ####1-Select an unordered set optimizing the
 ####CDMin criteria.
 ####We use the 'WheatData' for this example.
-####There are 200 genotypes
+####There are 200 genotypes, we will only use
+####the first 100 genotypes for this example.
 ####each genotype has 4670 markers (Wheat.M),
 ####therefore we have a good idea how these
-####200 genotypes are related. We are planning
+####100 genotypes are related. We are planning
 ####to select a subset of size 50 out of
-####these 200 genotypes as a training
+####these 100 genotypes as a training
 ####population using the CDMin criterion.
 
 data(WheatData)
-control<-TrainSelControl()
+control<-SetControlDefault(size="demo")
 control$niterations=10 # increase this for convergence.
 TSDAT <- MakeTrainSelData(M = Wheat.M)
-sol1<-TrainSel(Data=TSDAT,Candidates=list(1:200),
+sol1<-TrainSel(Data=TSDAT,Candidates=list(1:100),
 setsizes=c(50), settypes="UOS", Stat=NULL,
 control=control)
 sol1
@@ -125,7 +132,7 @@ plot(sol1$maxvec)
 ####CDMin criteria.
 ####Same data as 1. We are planning
 ####to select a subset of size 50 out of
-####these 200 genotypes as a training
+####these 100 genotypes as a training
 ####population using the CDMin criterion.
 ####A design matrix for the fixed effects
 ####X (50 x p) is specified in the data
@@ -134,7 +141,7 @@ plot(sol1$maxvec)
 ####important.
 X<-as.matrix(cbind(1, expand.grid(1:5,1:10)));head(X);
 TSDAT <- MakeTrainSelData(M = Wheat.M,X=X)
-sol2<-TrainSel(Data=TSDAT,Candidates=list(1:200),
+sol2<-TrainSel(Data=TSDAT,Candidates=list(1:100),
 setsizes=c(50),settypes="OS",
 Stat=NULL,control=control)
 print(sol2)
@@ -176,57 +183,8 @@ Doptfunc<-function(soln,Data){
 determinant(crossprod(Data[[1]][soln,]),logarithm = TRUE)$modulus
 }
 PCData<-svd(scale(Wheat.M, scale=FALSE,center=TRUE))$u[,1:10]
-sol4<-TrainSel(Data=list(PCData), Candidates=list(1:200),
+sol4<-TrainSel(Data=list(PCData), Candidates=list(1:100),
 setsizes=c(50), Stat=Doptfunc,settypes="UOS", control=control)
 sol4
-
-#######################################
-###initial population and an islands model manually
-############
-data(WheatData)
-controlInner<-TrainSelControl()
-controlInner$niterations=30 # increase this for convergence.
-controlInner$npop=30 # increase this for convergence.
-controlInner$nelite=3
-controlInner$niterSANN=10
-controlInner$progress=FALSE
-controlInner$minitbefstop=20
-
-TSDAT <- MakeTrainSelData(M = Wheat.M)
-
-library(parallel)
-nislands<-12
-solList<-mclapply(1:nislands, function(x){TrainSel(Data=TSDAT,Candidates=list(1:200),
-               setsizes=c(50), settypes="UOS", Stat=NULL,
-               control=controlInner)},mc.cores=3)
-
-for (repi in 1:3){
-print(repi)
-solnIntMat<-sapply(solList, function(x){x$BestSol_int})
-InitSol<-list(solnIntMat=solnIntMat)
-
-solList<-mclapply(1:nislands, function(x){TrainSel(Data=TSDAT,Candidates=list(1:200),
-                                            setsizes=c(50), settypes="UOS", Stat=NULL,
-                                            control=controlInner, InitSol = InitSol)}, mc.cores=3)
-}
-solnIntMat<-sapply(solList, function(x){x$BestSol_int})
-
-
-
-controlOuter<-TrainSelControl()
-controlOuter$niterations<-50
-controlOuter$niterSANN<-10
-
-sol<-TrainSel(Data=TSDAT,Candidates=list(1:200),
-               setsizes=c(50), settypes="UOS", Stat=NULL,
-               control=controlOuter, InitSol = InitSol)
-
-
-plot(sol$maxvec)
-sol$BestVal
-
-#######################################
-###initial population and an islands model manually (END)
-############
 }
 }

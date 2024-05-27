@@ -42,7 +42,7 @@ A TrainSel_Data class object. This is actually a list object so you can create t
 }
 
 \author{
-Deniz Akdemir, Simon Rio, Julio Isidro Sanchez
+Deniz Akdemir, Simon Rio, Julio Isidro Sanchez, Javier Fernandez-Gonzalez
 }
 \examples{
 \dontrun{
