@@ -1,7 +1,7 @@
 # TrainSel
 Selection of training populations.
 
-To obtain license keys, please contact us at https://breicongenomics.com/
+To obtain license keys, please contact us at j.isidro@upm.es
 
 Read LICENSE file for profit organizations. 
 
