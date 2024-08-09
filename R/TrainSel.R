@@ -118,7 +118,7 @@ TrainSelInner <-
       if (Verbose) {
         print("Using demo version.")
         write("Limited to selecting 100 integer and 3 double solutions with hyperparameters in SetControlDefault(size=\"demo\")", stdout())
-        print("If you are interested in upgrading to full version, please contact us at \x62r\145i\x63o\156g\x65n\157m\x69c\163@\x67m\141i\x6C.\143o\x6D")
+        print("If you are interested in upgrading to full version, please contact us at \x6A.\151s\x69d\162o\x40u\160m\x2Ee\163")
       }
       Username<-0
       Password<-0
