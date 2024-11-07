@@ -37,9 +37,9 @@ TrainSel(Data = NULL,
 }
 \item{InitSol}{NULL or a list of initial solutions matrices for integer and/or double parts (for example: InitSol=list(solnIntMat=solnIntMat,solnDBLMat=solnDBLMat), or InitSol=list(solnIntMat=solnIntMat), or InitSol=list(solnDBLMat=solnDBLMat). In an initial solutions matrix, each column corresponds to a different solution)
 }
-\item{Username}{Integer containinig the username needed to upgrade from Demo to full version. To obtain username and password, please contact us. For more information on our contact details, you can visit https://breicongenomics.com/
+\item{Username}{Integer containinig the username needed to upgrade from Demo to full version. To obtain username and password, please contact us at j.isidro@upm.es
 }
-\item{Password}{Integer containinig the password needed to upgrade from Demo to full version. To obtain username and password, please contact us. For more information on our contact details, you can visit https://breicongenomics.com/
+\item{Password}{Integer containinig the password needed to upgrade from Demo to full version. To obtain username and password, please contact us at j.isidro@upm.es
 }
 \item{Verbose}{If set to true, information about the license is printed.
 }
