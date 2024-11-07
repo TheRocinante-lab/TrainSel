@@ -211,7 +211,7 @@ TrainSel<-
 
 
     ####  control is null or  and object not of type TrainSel_control
-    if ((!is.null(control) && (class(control)[1]!="TrainSel_Control"))){
+    if ((!is.null(control) & (class(control)[1]!="TrainSel_Control"))){
       stop("control can be NULL or a TrainSel_Control object.")
     }
 
