@@ -1,7 +1,7 @@
 # TrainSel
 Selection of training populations.
 
-To obtain license keys, please contact us at j.isidro@upm.es
+To obtain license keys, please contact us at jisidro.work@gmail.com
 
 Read LICENSE file for profit organizations. 
 
