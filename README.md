@@ -7,4 +7,4 @@ Read LICENSE file for profit organizations.
 
 Free license keys will be provided to public bodies, such us, Universities, and non-profit organizations.
 
-To install the package in R, instructions can be found at the file "PackageInstallation.R"
+To install the package in R, instructions can be found at the file "TrainSel_Installation.R" or "TrainSel_Installation.html".
