@@ -1,11 +1,12 @@
 Package: TrainSel
 Type: Package
 Title: Design of Training Populations
-Date: 2026-02-23
-Maintainer: Deniz <deniz.akdemir.work@gmail.com>
+Date: 2026-07-29
+Maintainer: Deniz <deniz.akdemir.work@gmail.com; jisidro.work@gmail.com>
 Description: Optimally selecting ordered or unordered samples from a set of candidates, or several ordered or unordered samples from several sets of candidates.
 Imports: Rcpp (>= 1.0.3)
 Depends: R (>= 2.10), cluster, parallel, foreach, doParallel
 LinkingTo: Rcpp, RcppArmadillo, RcppProgress, RcppEigen
-Version: 3.1
+Version: 3.2
 License: file LICENSE
+SystemRequirements: C++14

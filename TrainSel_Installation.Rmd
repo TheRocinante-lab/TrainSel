@@ -1,0 +1,182 @@
+---
+title: "Packageinstallation"
+author: "The Rocinante Lab"
+date: "2026-07-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```r
+###############################################################################
+# TrainSel installation
+###############################################################################
+#
+# TrainSel contains compiled C++ code. Before running the R installation code,
+# install the development tools required by your operating system.
+#
+#
+# WINDOWS
+#
+# Install the Rtools version corresponding to your version of R:
+#
+# https://cran.r-project.org/bin/windows/Rtools/
+#
+# Use the default installation options, then restart R or RStudio.
+#
+#
+# macOS
+#
+# TrainSel supports both Intel Macs and Apple Silicon Macs, including
+# M1, M2, M3 and M4 processors.
+#
+# 1. Install the version of R appropriate for your Mac:
+#
+#    Apple Silicon -> arm64 version of R
+#    Intel Mac      -> x86_64 version of R
+#
+#    https://cran.r-project.org/bin/macosx/
+#
+# 2. Install Apple Command Line Tools by running this command in Terminal:
+#
+#    xcode-select --install
+#
+# 3. Install the GNU Fortran compiler recommended for your version of R:
+#
+#    https://mac.r-project.org/tools/
+#
+# For official R 4.5 installations, use:
+#
+#    gfortran-14.2-universal.pkg
+#
+# The universal installer supports both Intel and Apple Silicon Macs.
+#
+# Restart R or RStudio after installing the development tools.
+#
+# Do not normally edit ~/.R/Makevars. Old compiler settings in this file can
+# interfere with the compiler configuration supplied by R.
+#
+#
+# LINUX
+#
+# On Ubuntu or Debian, install the required development tools with:
+#
+#    sudo apt update
+#    sudo apt install build-essential gfortran
+#
+###############################################################################
+
+
+###############################################################################
+# Run the following code in R or RStudio
+###############################################################################
+
+options(
+  repos = c(CRAN = "https://cloud.r-project.org"),
+  timeout = 600
+)
+
+# Packages needed to install and run TrainSel
+required_packages <- c(
+  "Rcpp",
+  "RcppArmadillo",
+  "RcppEigen",
+  "RcppProgress",
+  "foreach",
+  "doParallel",
+  "remotes"
+)
+
+missing_packages <- setdiff(
+  required_packages,
+  rownames(installed.packages())
+)
+
+if (length(missing_packages) > 0L) {
+  install.packages(
+    missing_packages,
+    dependencies = TRUE
+  )
+}
+
+# Install TrainSel from GitHub
+remotes::install_github(
+  repo = "TheRocinante-lab/TrainSel",
+  dependencies = TRUE,
+  upgrade = "never",
+  build_vignettes = FALSE
+)
+
+# Load TrainSel and confirm the installed version
+library(TrainSel)
+
+cat(
+  "\nTrainSel was installed successfully.\n",
+  "Installed version: ",
+  as.character(packageVersion("TrainSel")),
+  "\n",
+  sep = ""
+)
+
+
+###############################################################################
+# Troubleshooting
+###############################################################################
+#
+# Successful installation normally ends with:
+#
+#    * DONE (TrainSel)
+#
+# Compiler warnings do not necessarily indicate installation failure.
+# The important information is found in the final lines of the output.
+#
+#
+# Windows
+#
+# If compilation tools are not found, confirm that the Rtools version matches
+# the installed version of R. Restart RStudio after installing Rtools.
+#
+#
+# macOS
+#
+# If the error mentions:
+#
+#    C++14 compiler required
+#
+# confirm that TrainSel/src/Makevars contains:
+#
+#    CXX_STD = CXX14
+#
+#
+# If the error mentions:
+#
+#    /opt/gfortran
+#    emutls_w
+#    gfortran
+#    Fortran libraries
+#
+# install the GNU Fortran compiler recommended for the installed version of R:
+#
+#    https://mac.r-project.org/tools/
+#
+#
+# Users can check their system architecture in R with:
+#
+#    Sys.info()[["machine"]]
+#    R.version$arch
+#
+# On a native Apple Silicon installation, both should indicate arm64.
+#
+#
+# When reporting an installation problem, provide:
+#
+#    1. The operating system
+#    2. The R version
+#    3. The output of R.version$arch
+#    4. The first line containing "error:"
+#    5. The final 30 to 50 lines of the installation output
+#
+###############################################################################
+```
